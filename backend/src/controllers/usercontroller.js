@@ -1,7 +1,7 @@
 const user = require("../models/user");
 require("../models/category"); // registers category model so populate can find it
+const cloudinary = require("../config/cloudinary");
 const { apierror } = require("../middlewares/errorhandler");
-
 
 // pull enums straight from the schema - one source of truth, no copy paste
 const enums = {
@@ -125,4 +125,42 @@ const getpublicprofile = async (req, res, next) => {
   }
 };
 
-module.exports = { updateme, getpublicprofile };
+// upload to cloudinary, then delete the old one so free storage stays clean
+const uploadphoto = async (req, res, next) => {
+  try {
+    if (!req.file) throw new apierror(400, "photo file required");
+
+    const size = parseInt(process.env.PROFILE_PHOTO_SIZE_PX);
+
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: `${process.env.CLOUDINARY_FOLDER}/profiles`,
+          // square crop centered on the face - clean avatars, small size for 2g
+          transformation: [{ width: size, height: size, crop: "fill", gravity: "face" }],
+        },
+        (err, result) => (err ? reject(err) : resolve(result))
+      );
+      stream.end(req.file.buffer);
+    });
+
+    const oldpublicid = req.user.photo && req.user.photo.publicid;
+
+    const updated = await user.findByIdAndUpdate(
+      req.user._id,
+      { $set: { photo: { url: result.secure_url, publicid: result.public_id } } },
+      { new: true }
+    );
+
+    // old photo cleanup - if this fails we don't fail the request
+    if (oldpublicid) {
+      await cloudinary.uploader.destroy(oldpublicid).catch(() => {});
+    }
+
+    res.status(200).json({ success: true, photo: updated.photo });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { updateme, getpublicprofile, uploadphoto };

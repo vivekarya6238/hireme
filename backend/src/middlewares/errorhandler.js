@@ -26,6 +26,15 @@ const errorhandler = (err, req, res, next) => {
     message = `duplicate value for ${Object.keys(err.keyValue).join(", ")}`;
   }
 
+  // multer upload errors (file too big etc)
+  if (err.name === "MulterError") {
+    statuscode = 400;
+    message =
+      err.code === "LIMIT_FILE_SIZE"
+        ? `file too large, max ${process.env.MAX_PHOTO_SIZE_MB}mb allowed`
+        : err.message.toLowerCase();
+  }
+
   res.status(statuscode).json({
     success: false,
     message,
