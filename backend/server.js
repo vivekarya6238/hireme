@@ -4,6 +4,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const connectdb = require("./src/config/db");
 const { errorhandler } = require("./src/middlewares/errorhandler");
+const authroutes = require("./src/routes/authroutes");
 
 const app = express();
 
@@ -29,8 +30,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// feature routes will mount here one by one
-// app.use("/api/auth", authroutes);
+app.use("/api/auth", authroutes);
 
 // unknown routes
 app.use((req, res) => {
