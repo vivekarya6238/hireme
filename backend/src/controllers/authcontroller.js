@@ -75,4 +75,13 @@ const verifyotp = async (req, res, next) => {
   }
 };
 
-module.exports = { sendotp, verifyotp };
+// who am i - client uses this on app open to restore session
+const getme = async (req, res, next) => {
+  try {
+    res.status(200).json({ success: true, user: req.user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { sendotp, verifyotp, getme };
