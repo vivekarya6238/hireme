@@ -7,6 +7,7 @@ const { errorhandler } = require("./src/middlewares/errorhandler");
 const authroutes = require("./src/routes/authroutes");
 const userroutes = require("./src/routes/userroutes");
 const jobroutes = require("./src/routes/jobroutes");
+const applicationroutes = require("./src/routes/applicationroutes");
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authroutes);
 app.use("/api/users", userroutes);
 app.use("/api/jobs", jobroutes);
+app.use("/api/applications", applicationroutes);
 
 // unknown routes
 app.use((req, res) => {
