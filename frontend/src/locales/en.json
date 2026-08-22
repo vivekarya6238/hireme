@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "login": "Log in",
+    "getStarted": "Get Started"
+  },
+  "hero": {
+    "eyebrow": "Local hiring, made simple",
+    "heading1": "Find work near you,",
+    "heading2": "or find workers nearby",
+    "subtitle": "HireMe connects local workers and hirers directly — transparent, fair, and built for trust.",
+    "ctaWorker": "I'm looking for work",
+    "ctaHirer": "I need to hire",
+    "jobCardTitle": "2 helpers needed for shop",
+    "jobCardDistance": "1.2 km away",
+    "jobCardStatus": "Open"
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "step1Title": "Choose a category",
+    "step1Desc": "Pick the type of work you need",
+    "step2Title": "See what's nearby",
+    "step2Desc": "Browse opportunities close to you",
+    "step3Title": "Connect directly",
+    "step3Desc": "Once selected, contact each other directly"
+  },
+  "categories": {
+    "title": "Browse by category",
+    "loading": "Loading categories...",
+    "empty": "Categories coming soon.",
+    "cat.helper": "General Helper",
+    "cat.loader": "Loader",
+    "cat.shopassistant": "Shop Assistant",
+    "cat.farmwork": "Farm Work",
+    "cat.construction": "Construction",
+    "cat.cleaning": "Cleaning",
+    "cat.cooking": "Cooking",
+    "cat.driver": "Driver",
+    "cat.eventwork": "Event Work",
+    "cat.security": "Security"
+  },
+  "trust": {
+    "free": "Completely free to use",
+    "phone": "Sign in with phone, no passwords",
+    "ratings": "Two-way ratings build real trust"
+  },
+  "footer": {
+    "tagline": "Built for local workers and hirers."
+  }
+}

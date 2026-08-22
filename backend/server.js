@@ -9,23 +9,19 @@ const userroutes = require("./src/routes/userroutes");
 const jobroutes = require("./src/routes/jobroutes");
 const applicationroutes = require("./src/routes/applicationroutes");
 const ratingroutes = require("./src/routes/ratingroutes");
+const categoryroutes = require("./src/routes/categoryroutes");
 
 const app = express();
 
-// security headers
 app.use(helmet());
-
-// only our frontend can call the api
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
-
 app.use(express.json({ limit: process.env.JSON_BODY_LIMIT }));
 
-// health check - render pings this to know we're alive
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -39,16 +35,14 @@ app.use("/api/users", userroutes);
 app.use("/api/jobs", jobroutes);
 app.use("/api/applications", applicationroutes);
 app.use("/api/ratings", ratingroutes);
+app.use("/api/categories", categoryroutes);
 
-// unknown routes
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "route not found" });
 });
 
-// keep this last
 app.use(errorhandler);
 
-// db first, then server
 connectdb().then(() => {
   app.listen(process.env.PORT, () => {
     console.log(`server running on port ${process.env.PORT}`);
