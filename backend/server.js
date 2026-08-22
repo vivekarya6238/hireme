@@ -8,6 +8,7 @@ const authroutes = require("./src/routes/authroutes");
 const userroutes = require("./src/routes/userroutes");
 const jobroutes = require("./src/routes/jobroutes");
 const applicationroutes = require("./src/routes/applicationroutes");
+const ratingroutes = require("./src/routes/ratingroutes");
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/api/auth", authroutes);
 app.use("/api/users", userroutes);
 app.use("/api/jobs", jobroutes);
 app.use("/api/applications", applicationroutes);
+app.use("/api/ratings", ratingroutes);
 
 // unknown routes
 app.use((req, res) => {
