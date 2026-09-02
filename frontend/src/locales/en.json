@@ -29,7 +29,19 @@
   "roleRequired": "Please select one",
   "newAccountBadge": "New here?",
   "createAccountTitle": "Create your account",
-  "createAndContinue": "Create Account & Continue"
+  "createAndContinue": "Create Account & Continue",
+  "welcomeBackBadge": "Account found",
+  "welcomeBackTitle": "Welcome back!",
+  "resendOtp": "Resend OTP",
+  "resendIn": "Resend OTP in {{seconds}}s",
+  "tabLogin": "Login",
+  "tabRegister": "Register",
+  "loginTitle": "Welcome back",
+  "registerTitle": "Create your account",
+  "notRegistered": "This number isn't registered yet.",
+  "alreadyRegistered": "This number is already registered.",
+  "switchToRegister": "Switch to Register",
+  "switchToLogin": "Switch to Login"
 },
   "hero": {
     "eyebrow": "Local hiring, made simple",

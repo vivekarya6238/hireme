@@ -1,48 +1,101 @@
 import { useAuth } from "../context/AuthContext";
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../services/api";
 import Logo from "../components/Logo";
 
 const isvalidphone = (phone) => /^[6-9]\d{9}$/.test(phone);
+const RESEND_SECONDS = 30;
 
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const [mode, setMode] = useState("login"); // login | register
   const [step, setStep] = useState("phone");
   const [phone, setPhone] = useState("");
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const [otpDigits, setOtpDigits] = useState(Array(6).fill(""));
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [isnewuser, setIsnewuser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mismatch, setMismatch] = useState(null); // "notregistered" | "alreadyregistered" | null
+  const [resendTimer, setResendTimer] = useState(0);
 
   const otpRefs = useRef([]);
 
-  const handlePhoneSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  // ticks the resend cooldown down every second
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const id = setInterval(() => setResendTimer((s) => s - 1), 1000);
+    return () => clearInterval(id);
+  }, [resendTimer]);
 
-    if (!isvalidphone(phone)) {
-      setError(t("auth.invalidPhone"));
-      return;
-    }
+  const phoneIsValid = isvalidphone(phone);
+  const showPhoneError = phoneTouched && phone.length > 0 && !phoneIsValid;
 
+  const handlePhoneChange = (e) => {
+    setPhone(e.target.value.replace(/\D/g, ""));
+    setPhoneTouched(true);
+    setMismatch(null);
+  };
+
+  const sendOtp = async () => {
     setLoading(true);
     try {
       const res = await api.post("/auth/sendotp", { phone });
-      setIsnewuser(res.data.isnewuser);
+      const newuser = res.data.isnewuser;
+
+      // intent mismatch - don't silently switch, tell the person what happened
+      if (mode === "login" && newuser) {
+        setMismatch("notregistered");
+        setLoading(false);
+        return;
+      }
+      if (mode === "register" && !newuser) {
+        setMismatch("alreadyregistered");
+        setLoading(false);
+        return;
+      }
+
+      setIsnewuser(newuser);
       setStep("otp");
+      setResendTimer(RESEND_SECONDS);
     } catch (err) {
       setError(err.response?.data?.message || t("auth.genericError"));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePhoneSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setMismatch(null);
+
+    if (!phoneIsValid) {
+      setPhoneTouched(true);
+      return;
+    }
+
+    await sendOtp();
+  };
+
+  const handleSwitchMode = () => {
+    setMode(mode === "login" ? "register" : "login");
+    setMismatch(null);
+  };
+
+  const handleResend = async () => {
+    if (resendTimer > 0) return;
+    setError("");
+    setOtpDigits(Array(6).fill(""));
+    await sendOtp();
   };
 
   const handleOtpChange = (index, value) => {
@@ -107,6 +160,7 @@ export default function Login() {
     setStep("phone");
     setOtpDigits(Array(6).fill(""));
     setError("");
+    setResendTimer(0);
   };
 
   return (
@@ -114,16 +168,15 @@ export default function Login() {
       {/* branding side */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary)]/85 flex-col justify-between p-12 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] bg-[length:24px_24px]" />
-        {/* soft, narrow blend into the form side instead of a hard cut */}
         <div className="absolute top-0 right-0 h-full w-16 bg-gradient-to-r from-transparent to-[var(--color-bg)]" />
 
         <div className="relative">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <Logo size={36} />
             <span className="font-display text-xl font-bold text-white">
               Hire<span className="text-[var(--color-accent)]">Me</span>
             </span>
-          </div>
+          </Link>
         </div>
 
         <motion.div
@@ -172,12 +225,12 @@ export default function Login() {
           transition={{ duration: 0.4 }}
           className="w-full max-w-sm"
         >
-          <div className="lg:hidden flex items-center gap-2 mb-8">
+          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8">
             <Logo size={32} />
             <span className="font-display text-lg font-bold text-[var(--color-ink)]">
               Hire<span className="text-[var(--color-primary)]">Me</span>
             </span>
-          </div>
+          </Link>
 
           <AnimatePresence mode="wait">
             {step === "phone" && (
@@ -187,8 +240,46 @@ export default function Login() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
+                {/* intent switch - login vs register, no more guessing silently */}
+                <div className="flex bg-[var(--color-border)]/40 rounded-xl p-1 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("login");
+                      setMismatch(null);
+                      setPhone("");
+                      setPhoneTouched(false);
+                      setError("");
+                    }}
+                    className={`flex-1 h-10 rounded-lg font-body text-sm font-semibold transition-colors ${
+                      mode === "login"
+                        ? "bg-white text-[var(--color-ink)] shadow-sm"
+                        : "text-[var(--color-muted)]"
+                    }`}
+                  >
+                    {t("auth.tabLogin")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("register");
+                      setMismatch(null);
+                      setPhone("");
+                      setPhoneTouched(false);
+                      setError("");
+                    }}
+                    className={`flex-1 h-10 rounded-lg font-body text-sm font-semibold transition-colors ${
+                      mode === "register"
+                        ? "bg-white text-[var(--color-ink)] shadow-sm"
+                        : "text-[var(--color-muted)]"
+                    }`}
+                  >
+                    {t("auth.tabRegister")}
+                  </button>
+                </div>
+
                 <h1 className="font-display text-2xl font-bold text-[var(--color-ink)] mb-1">
-                  {t("auth.title")}
+                  {mode === "login" ? t("auth.loginTitle") : t("auth.registerTitle")}
                 </h1>
                 <p className="font-body text-sm text-[var(--color-muted)] mb-8">
                   {t("auth.subtitle")}
@@ -199,7 +290,13 @@ export default function Login() {
                     <label className="font-body text-sm text-[var(--color-ink)] mb-1.5 block">
                       {t("auth.phoneLabel")}
                     </label>
-                    <div className="flex items-center border border-[var(--color-border)] rounded-xl overflow-hidden bg-white focus-within:border-[var(--color-primary)] transition-colors">
+                    <div
+                      className={`flex items-center border rounded-xl overflow-hidden bg-white transition-colors ${
+                        showPhoneError
+                          ? "border-red-500"
+                          : "border-[var(--color-border)] focus-within:border-[var(--color-primary)]"
+                      }`}
+                    >
                       <span className="px-3 font-mono text-[var(--color-muted)] h-12 flex items-center border-r border-[var(--color-border)]">
                         +91
                       </span>
@@ -209,12 +306,52 @@ export default function Login() {
                         maxLength={10}
                         autoFocus
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                        onChange={handlePhoneChange}
+                        onBlur={() => setPhoneTouched(true)}
                         placeholder={t("auth.phonePlaceholder")}
                         className="flex-1 h-12 px-3 font-mono text-[var(--color-ink)] outline-none"
                       />
                     </div>
+                    <AnimatePresence>
+                      {showPhoneError && (
+                        <motion.p
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="text-sm text-red-600 font-body mt-1.5"
+                        >
+                          {t("auth.invalidPhone")}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
                   </div>
+
+                  {/* explicit mismatch feedback instead of silently switching flows */}
+                  <AnimatePresence>
+                    {mismatch && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-amber-50 border border-amber-200 rounded-xl p-4"
+                      >
+                        <p className="font-body text-sm text-amber-800 mb-2">
+                          {mismatch === "notregistered"
+                            ? t("auth.notRegistered")
+                            : t("auth.alreadyRegistered")}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleSwitchMode}
+                          className="font-body text-sm font-semibold text-[var(--color-primary)] underline"
+                        >
+                          {mismatch === "notregistered"
+                            ? t("auth.switchToRegister")
+                            : t("auth.switchToLogin")}
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {error && <p className="text-sm text-red-600 font-body">{error}</p>}
 
@@ -237,14 +374,17 @@ export default function Login() {
                 exit={{ opacity: 0 }}
               >
                 {!isnewuser && (
-                  <>
+                  <div className="mb-6">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase text-green-700 bg-green-100 px-2.5 py-1 rounded-full mb-2">
+                      {t("auth.welcomeBackBadge")}
+                    </span>
                     <h1 className="font-display text-2xl font-bold text-[var(--color-ink)] mb-1">
-                      {t("auth.verifyOtp")}
+                      {t("auth.welcomeBackTitle")}
                     </h1>
-                    <p className="font-body text-sm text-[var(--color-muted)] mb-8">
+                    <p className="font-body text-sm text-[var(--color-muted)]">
                       {t("auth.otpSentTo")} +91 {phone}
                     </p>
-                  </>
+                  </div>
                 )}
 
                 {isnewuser && (
@@ -296,6 +436,22 @@ export default function Login() {
                           className="w-11 h-12 text-center rounded-xl border border-[var(--color-border)] bg-white font-mono text-lg text-[var(--color-ink)] outline-none focus:border-[var(--color-primary)] transition-colors"
                         />
                       ))}
+                    </div>
+
+                    <div className="mt-3">
+                      {resendTimer > 0 ? (
+                        <p className="font-body text-xs text-[var(--color-muted)]">
+                          {t("auth.resendIn", { seconds: resendTimer })}
+                        </p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleResend}
+                          className="font-body text-xs text-[var(--color-primary)] underline"
+                        >
+                          {t("auth.resendOtp")}
+                        </button>
+                      )}
                     </div>
                   </div>
 

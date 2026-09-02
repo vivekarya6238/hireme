@@ -29,7 +29,19 @@
   "roleRequired": "एक विकल्प चुनें",
   "newAccountBadge": "नए यूज़र?",
   "createAccountTitle": "अपना अकाउंट बनाएं",
-  "createAndContinue": "अकाउंट बनाएं और आगे बढ़ें"
+  "createAndContinue": "अकाउंट बनाएं और आगे बढ़ें",
+  "welcomeBackBadge": "अकाउंट मिल गया",
+  "welcomeBackTitle": "वापसी पर स्वागत है!",
+  "resendOtp": "OTP दोबारा भेजें",
+  "resendIn": "{{seconds}} सेकंड में दोबारा भेजें",
+  "tabLogin": "लॉग इन",
+  "tabRegister": "रजिस्टर करें",
+  "loginTitle": "वापसी पर स्वागत है",
+  "registerTitle": "अपना अकाउंट बनाएं",
+  "notRegistered": "यह नंबर अभी रजिस्टर नहीं है।",
+  "alreadyRegistered": "यह नंबर पहले से रजिस्टर है।",
+  "switchToRegister": "रजिस्टर पर जाएं",
+  "switchToLogin": "लॉग इन पर जाएं"
 },
   "hero": {
     "eyebrow": "स्थानीय काम, आसान तरीके से",
