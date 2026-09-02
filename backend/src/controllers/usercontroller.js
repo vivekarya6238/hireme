@@ -57,11 +57,15 @@ const updateme = async (req, res, next) => {
 
     // dot notation so sending one subfield doesn't wipe the rest
     if (workerprofile !== undefined) {
-      const { skills, experienceyears, availability, expectedpay, education } = workerprofile;
+      const { skills, othercategorytext, experienceyears, availability, expectedpay, education } = workerprofile;
 
       if (skills !== undefined) {
         if (!Array.isArray(skills)) throw new apierror(400, "skills must be an array of category ids");
         updates["workerprofile.skills"] = skills;
+      }
+      // free text when worker's actual work isn't in our category list yet
+      if (othercategorytext !== undefined) {
+        updates["workerprofile.othercategorytext"] = String(othercategorytext).trim();
       }
       if (experienceyears !== undefined) {
         const years = Number(experienceyears);

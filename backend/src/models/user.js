@@ -37,6 +37,8 @@ const userschema = new mongoose.Schema(
     // everything optional - filled via dropdowns, not long forms
     workerprofile: {
       skills: [{ type: mongoose.Schema.Types.ObjectId, ref: "category" }],
+      // worker picked "other" during onboarding, category not in our list yet
+      othercategorytext: { type: String, trim: true },
       experienceyears: { type: Number, min: 0 },
       availability: {
         type: String,
