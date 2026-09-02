@@ -2,7 +2,19 @@
   "nav": {
     "login": "लॉग इन",
     "getStarted": "शुरू करें",
-    "logout": "लॉग आउट"
+    "logout": "लॉग आउट",
+    "myProfile": "मेरी प्रोफ़ाइल"
+  },
+  "profile": {
+  "workDetails": "काम की जानकारी",
+  "skills": "श्रेणियाँ",
+  "otherWork": "अन्य काम",
+  "noCategorySet": "अभी तक कोई काम श्रेणी नहीं चुनी गई।",
+  "businessDetails": "बिज़नेस जानकारी",
+  "noBusinessSet": "अभी तक कोई बिज़नेस नाम नहीं है।",
+  "location": "स्थान",
+  "locationSet": "स्थान सेट है",
+  "noLocationSet": "स्थान अभी सेट नहीं है।"
   },
   "auth": {
   "title": "HireMe में आपका स्वागत है",

@@ -2,7 +2,19 @@
   "nav": {
     "login": "Log in",
     "getStarted": "Get Started",
-    "logout": "Log out"
+    "logout": "Log out",
+    "myProfile": "My Profile"
+  },
+  "profile": {
+  "workDetails": "Work Details",
+  "skills": "Categories",
+  "otherWork": "Other work",
+  "noCategorySet": "No work category set yet.",
+  "businessDetails": "Business Details",
+  "noBusinessSet": "No business name set yet.",
+  "location": "Location",
+  "locationSet": "Location is set",
+  "noLocationSet": "Location not set yet."
   },
   "auth": {
   "title": "Welcome to HireMe",
