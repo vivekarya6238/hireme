@@ -93,6 +93,15 @@ function Navbar() {
                   >
                     {t("nav.myProfile")}
                   </Link>
+                  {user.role === "worker" && (
+                    <Link
+                      to="/applications"
+                      onClick={() => setMenuOpen(false)}
+                      className="block w-full text-left px-4 py-2.5 font-body text-sm text-ink hover:bg-bg transition-colors"
+                    >
+                      {t("nav.myApplications")}
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2.5 font-body text-sm text-red-600 hover:bg-red-50 transition-colors"

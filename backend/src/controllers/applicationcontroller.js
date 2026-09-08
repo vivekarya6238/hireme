@@ -137,7 +137,11 @@ const getapplicants = async (req, res, next) => {
     const found = await application
       .find({ job: target._id })
       .sort({ createdAt: 1 })
-      .populate("worker", "name photo addresstext ratingsummary workerprofile phone");
+      .populate({
+        path: "worker",
+        select: "name photo addresstext ratingsummary workerprofile phone createdAt",
+        populate: { path: "workerprofile.skills", select: "namekey icon" },
+      });
 
     // phone reveal rule: worker's phone only after selection
     const applicants = found.map((a) => {

@@ -1,3 +1,4 @@
+import { getCategoryIcon } from "../utils/categoryicons";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -5,8 +6,7 @@ import { motion } from "framer-motion";
 import api from "../services/api";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
-import { getCategoryIcon } from "../utils/categoryicons";
-import { MapPin, Star, Users, Calendar, CheckCircle2, XCircle, Lock } from "lucide-react";
+import { MapPin, Star, Users, Calendar, CheckCircle2, XCircle, Lock, ChevronDown, Briefcase, GraduationCap, Clock, ShieldCheck } from "lucide-react";
 
 const STATUS_TEXT = {
   open: "text-green-700 bg-green-50",
@@ -41,6 +41,7 @@ export default function JobDetail() {
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
 
   const isOwner = job && user && String(job.hirer?._id) === String(user.id);
   const isWorker = user?.role === "worker";
@@ -450,47 +451,158 @@ export default function JobDetail() {
 
             {!applicantsLoading && applicants.length > 0 && (
               <div className="space-y-3">
-                {applicants.map((a) => (
-                  <div
-                    key={a._id}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-[var(--color-border)]"
-                  >
-                    {a.worker?.photo?.url ? (
-                      <img src={a.worker.photo.url} alt={a.worker.name} className="w-9 h-9 rounded-full object-cover shrink-0" />
-                    ) : (
-                      <span className="w-9 h-9 rounded-full bg-[var(--color-bg)] text-[var(--color-ink)] font-display font-bold text-sm flex items-center justify-center shrink-0">
-                        {a.worker?.name?.[0]?.toUpperCase()}
-                      </span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body font-semibold text-sm text-[var(--color-ink)] truncate">
-                        {a.worker?.name}
-                      </p>
-                      <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full capitalize ${APP_STATUS_TEXT[a.status]}`}>
-                        {t(`jobDetail.status.${a.status}`)}
-                      </span>
-                    </div>
-                    {a.status === "applied" && job.status === "open" && (
+              {applicants.map((a) => {
+                const isExpanded = expandedId === a._id;
+                const wp = a.worker?.workerprofile || {};
+                const hasRating = a.worker?.ratingsummary?.countasworker > 0;
+
+                return (
+                  <div key={a._id} className="rounded-xl border border-[var(--color-border)] overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedId(isExpanded ? null : a._id)}
+                      className="w-full flex items-center gap-3 p-3 text-left"
+                    >
+                      {a.worker?.photo?.url ? (
+                        <img src={a.worker.photo.url} alt={a.worker.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <span className="w-10 h-10 rounded-full bg-[var(--color-bg)] text-[var(--color-ink)] font-display font-bold text-sm flex items-center justify-center shrink-0">
+                          {a.worker?.name?.[0]?.toUpperCase()}
+                        </span>
+                      )}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-body font-semibold text-sm text-[var(--color-ink)] truncate">
+                            {a.worker?.name}
+                          </p>
+                          {hasRating ? (
+                            <span className="flex items-center gap-0.5 text-xs text-[var(--color-muted)] shrink-0">
+                              <Star size={11} className="text-amber-500 fill-amber-500" />
+                              {a.worker.ratingsummary.avgasworker.toFixed(1)}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-[var(--color-muted)] shrink-0">{t("profile.noRatingsYet")}</span>
+                          )}
+                        </div>
+                        <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full capitalize mt-0.5 ${APP_STATUS_TEXT[a.status]}`}>
+                          {t(`jobDetail.status.${a.status}`)}
+                        </span>
+                      </div>
+
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          onClick={() => handleSelect(a._id)}
-                          disabled={busyId === a._id}
-                          className="w-8 h-8 rounded-lg bg-green-50 text-green-700 flex items-center justify-center disabled:opacity-60"
-                        >
-                          <CheckCircle2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleReject(a._id)}
-                          disabled={busyId === a._id}
-                          className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center disabled:opacity-60"
-                        >
-                          <XCircle size={16} />
-                        </button>
+                        {a.status === "applied" && job.status === "open" && (
+                          <>
+                            <span
+                              role="button"
+                              onClick={(e) => { e.stopPropagation(); handleSelect(a._id); }}
+                              className="w-8 h-8 rounded-lg bg-green-50 text-green-700 flex items-center justify-center"
+                            >
+                              <CheckCircle2 size={16} />
+                            </span>
+                            <span
+                              role="button"
+                              onClick={(e) => { e.stopPropagation(); handleReject(a._id); }}
+                              className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center"
+                            >
+                              <XCircle size={16} />
+                            </span>
+                          </>
+                        )}
+                        <ChevronDown
+                          size={16}
+                          className={`text-[var(--color-muted)] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                        />
+                      </div>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-1 border-t border-[var(--color-border)] bg-[var(--color-bg)]">
+                        {wp.bio && (
+                          <p className="font-body text-sm text-[var(--color-ink)] mt-3 mb-3 leading-relaxed">
+                            {wp.bio}
+                          </p>
+                        )}
+
+                        {(wp.skills?.length > 0 || wp.othercategorytext) && (
+                          <div className="flex flex-wrap gap-1.5 mb-3 mt-3">
+                            {wp.skills?.map((s) => {
+                              const Icon = getCategoryIcon(s.namekey);
+                              return (
+                                <span
+                                  key={s._id}
+                                  className="inline-flex items-center gap-1 text-[11px] font-body font-medium text-[var(--color-primary)] bg-[var(--color-primary)]/8 px-2 py-1 rounded-lg"
+                                >
+                                  <Icon size={12} strokeWidth={1.75} />
+                                  {t(`categories.${s.namekey}`)}
+                                </span>
+                              );
+                            })}
+                            {wp.othercategorytext && (
+                              <span className="inline-flex items-center text-[11px] font-body font-medium text-[var(--color-ink)] bg-[var(--color-border)]/40 px-2 py-1 rounded-lg">
+                                {wp.othercategorytext}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-3 mt-3">
+                          <div className="flex items-center gap-2">
+                            <Briefcase size={14} className="text-[var(--color-muted)]" />
+                            <span className="font-body text-xs text-[var(--color-ink)]">
+                              {wp.experienceyears !== undefined
+                                ? t("profile.yearsValue", { years: wp.experienceyears })
+                                : t("jobDetail.noInfo")}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock size={14} className="text-[var(--color-muted)]" />
+                            <span className="font-body text-xs text-[var(--color-ink)]">
+                              {wp.availability ? t(`profile.availability.${wp.availability}`) : t("jobDetail.noInfo")}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <GraduationCap size={14} className="text-[var(--color-muted)]" />
+                            <span className="font-body text-xs text-[var(--color-ink)]">
+                              {wp.education ? t(`profile.education.${wp.education}`) : t("jobDetail.noInfo")}
+                            </span>
+                          </div>
+                          {a.worker?.addresstext && (
+                            <div className="flex items-center gap-2">
+                              <MapPin size={14} className="text-[var(--color-muted)]" />
+                              <span className="font-body text-xs text-[var(--color-ink)]">{a.worker.addresstext}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[var(--color-border)]">
+                          <span className="flex items-center gap-1.5 text-xs text-green-700 font-body font-medium">
+                            <ShieldCheck size={13} />
+                            {t("profile.phoneVerified")}
+                          </span>
+                          {a.worker?.createdAt && (
+                            <span className="flex items-center gap-1.5 text-xs text-[var(--color-muted)] font-body">
+                              <Calendar size={13} />
+                              {t("profile.memberSince", {
+                                date: new Date(a.worker.createdAt).toLocaleDateString("en-IN", { month: "long", year: "numeric" }),
+                              })}
+                            </span>
+                          )}
+                        </div>
+
+                        {a.status === "selected" && a.worker?.phone && (
+                          <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
+                            <p className="font-mono text-sm font-semibold text-[var(--color-primary)]">
+                              📞 {a.worker.phone}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
+                );
+              })}
+            </div>
             )}
           </motion.div>
         )}

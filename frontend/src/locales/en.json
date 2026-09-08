@@ -3,7 +3,8 @@
     "login": "Log in",
     "getStarted": "Get Started",
     "logout": "Log out",
-    "myProfile": "My Profile"
+    "myProfile": "My Profile",
+    "myApplications": "My Applications"
   },
   "profile": {
   "workDetails": "Work Details",
@@ -246,6 +247,7 @@
   "reopenJob": "Reopen Job",
   "closeConfirmTitle": "Close this job?",
   "closeConfirmBody": "Workers won't be able to apply anymore. You can reopen it later if needed.",
+  "noInfo": "Not specified",
 
   "status": {
     "applied": "Applied",
@@ -262,6 +264,12 @@
   "openingsInvalid": "Openings must be at least 1",
   "openingsBelowSelected": "Openings can't be less than {{count}} — workers already selected",
   "alreadySelected": "{{count}} already selected"
+},
+"myApplications": {
+  "title": "My Applications",
+  "subtitle": "Track the status of jobs you've applied to.",
+  "empty": "You haven't applied to any jobs yet.",
+  "browseJobs": "Browse Jobs"
 },
   "footer": {
     "tagline": "Built for local workers and hirers."

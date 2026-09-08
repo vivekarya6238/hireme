@@ -10,6 +10,7 @@ import EditProfile from "./pages/EditProfile";
 import PostJob from "./pages/PostJob";
 import JobDetail from "./pages/JobDetail";
 import EditJob from "./pages/EditJob";
+import MyApplications from "./pages/MyApplications";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/jobs/new" element={<ProtectedRoute><PostJob /></ProtectedRoute>} />
         <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
         <Route path="/jobs/:id/edit" element={<ProtectedRoute><EditJob /></ProtectedRoute>} />
+        <Route path="/applications" element={<ProtectedRoute><MyApplications /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   );
