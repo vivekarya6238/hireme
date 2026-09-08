@@ -57,7 +57,13 @@ const updateme = async (req, res, next) => {
 
     // dot notation so sending one subfield doesn't wipe the rest
     if (workerprofile !== undefined) {
-      const { skills, othercategorytext, experienceyears, availability, expectedpay, education } = workerprofile;
+      const { bio, skills, othercategorytext, experienceyears, availability, expectedpay, education } = workerprofile;
+
+      if (bio !== undefined) {
+        const clean = String(bio).trim();
+        if (clean.length > 150) throw new apierror(400, "bio must be under 150 characters");
+        updates["workerprofile.bio"] = clean;
+      }
 
       if (skills !== undefined) {
         if (!Array.isArray(skills)) throw new apierror(400, "skills must be an array of category ids");

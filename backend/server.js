@@ -10,6 +10,7 @@ const jobroutes = require("./src/routes/jobroutes");
 const applicationroutes = require("./src/routes/applicationroutes");
 const ratingroutes = require("./src/routes/ratingroutes");
 const categoryroutes = require("./src/routes/categoryroutes");
+const workplacetyperoutes = require("./src/routes/workplacetyperoutes");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/jobs", jobroutes);
 app.use("/api/applications", applicationroutes);
 app.use("/api/ratings", ratingroutes);
 app.use("/api/categories", categoryroutes);
+app.use("/api/workplacetypes", workplacetyperoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: "route not found" });

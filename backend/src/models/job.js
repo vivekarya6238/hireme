@@ -23,6 +23,8 @@ const jobschema = new mongoose.Schema(
       ref: "category",
       required: true,
     },
+    // hirer picked "other" while posting, category not in our list yet
+    othercategorytext: { type: String, trim: true },
     workplacetype: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "workplacetype",

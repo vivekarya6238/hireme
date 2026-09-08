@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const user = require("../models/user");
+require("../models/category"); // registers category model so populate can find it
 const otpservice = require("../services/otpservice");
 const { apierror } = require("../middlewares/errorhandler");
 
@@ -76,9 +77,14 @@ const verifyotp = async (req, res, next) => {
 };
 
 // who am i - client uses this on app open to restore session
+// re-fetch instead of trusting req.user directly, so skills come populated
 const getme = async (req, res, next) => {
   try {
-    res.status(200).json({ success: true, user: req.user });
+    const account = await user
+      .findById(req.user._id)
+      .populate("workerprofile.skills", "namekey icon");
+
+    res.status(200).json({ success: true, user: account });
   } catch (err) {
     next(err);
   }

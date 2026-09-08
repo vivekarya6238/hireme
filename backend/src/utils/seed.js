@@ -18,6 +18,7 @@ const categories = [
   { namekey: "cat.driver", icon: "🚗", sortorder: 8, suggestedpay: { min: 12000, max: 20000, type: "permonth" } },
   { namekey: "cat.eventwork", icon: "🎪", sortorder: 9, suggestedpay: { min: 500, max: 900, type: "perday" } },
   { namekey: "cat.security", icon: "🛡️", sortorder: 10, suggestedpay: { min: 10000, max: 16000, type: "permonth" } },
+  { namekey: "cat.other", icon: "❓", sortorder: 11 },
 ];
 
 const workplacetypes = [
@@ -29,6 +30,7 @@ const workplacetypes = [
   { namekey: "wp.warehouse", icon: "🏭", sortorder: 6 },
   { namekey: "wp.constructionsite", icon: "🧱", sortorder: 7 },
   { namekey: "wp.restaurant", icon: "🍽️", sortorder: 8 },
+  { namekey: "wp.other", icon: "❓", sortorder: 9 },
 ];
 
 const seed = async () => {

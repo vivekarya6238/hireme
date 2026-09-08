@@ -4,7 +4,6 @@ const workplacetype = require("../models/workplacetype");
 const { apierror } = require("../middlewares/errorhandler");
 const { isvalidlocation } = require("../utils/validators");
 
-// enums from schema - single source of truth
 const paytypes = job.schema.path("pay.type").enumValues;
 
 const createjob = async (req, res, next) => {
@@ -13,6 +12,7 @@ const createjob = async (req, res, next) => {
       title,
       description,
       category: categoryid,
+      othercategorytext,
       workplacetype: workplacetypeid,
       openings,
       pay,
@@ -35,20 +35,17 @@ const createjob = async (req, res, next) => {
     if (!isvalidlocation(location))
       throw new apierror(400, "location must be a geojson point with [lng, lat]");
 
-    // both refs must actually exist and be active
     const cat = await category.findById(categoryid);
     if (!cat || !cat.isactive) throw new apierror(400, "invalid category");
 
     const wp = await workplacetype.findById(workplacetypeid);
     if (!wp || !wp.isactive) throw new apierror(400, "invalid workplace type");
 
-    // fair-pay flag - only compare when pay types match
     let belowsuggestedpay = false;
     if (cat.suggestedpay && cat.suggestedpay.min && cat.suggestedpay.type === pay.type) {
       belowsuggestedpay = Number(pay.amount) < cat.suggestedpay.min;
     }
 
-    // frozen at creation - changing env multiplier later won't touch old jobs
     const applicationcap =
       openingscount * parseInt(process.env.APPLICATION_CAP_MULTIPLIER);
 
@@ -61,6 +58,7 @@ const createjob = async (req, res, next) => {
       title: cleantitle,
       description: description ? String(description).trim() : undefined,
       category: categoryid,
+      othercategorytext: othercategorytext ? String(othercategorytext).trim() : undefined,
       workplacetype: workplacetypeid,
       openings: openingscount,
       pay: { amount: Number(pay.amount), type: pay.type },
@@ -78,7 +76,6 @@ const createjob = async (req, res, next) => {
   }
 };
 
-// worker's main screen: open jobs near me, closest first
 const browsejobs = async (req, res, next) => {
   try {
     const lat = Number(req.query.lat);
@@ -87,7 +84,6 @@ const browsejobs = async (req, res, next) => {
     if (lng < -180 || lng > 180 || lat < -90 || lat > 90)
       throw new apierror(400, "invalid coordinates");
 
-    // radius clamped so nobody queries the whole planet
     const maxradius = parseInt(process.env.MAX_SEARCH_RADIUS_KM);
     let radiuskm = Number(req.query.radiuskm) || parseInt(process.env.DEFAULT_SEARCH_RADIUS_KM);
     if (radiuskm < 1) radiuskm = 1;
@@ -103,18 +99,17 @@ const browsejobs = async (req, res, next) => {
 
     const filter = {
       status: "open",
-      expiresat: { $gt: new Date() }, // expired jobs never show up, no cron needed
+      expiresat: { $gt: new Date() },
       location: {
         $near: {
           $geometry: { type: "Point", coordinates: [lng, lat] },
-          $maxDistance: radiuskm * 1000, // meters
+          $maxDistance: radiuskm * 1000,
         },
       },
     };
 
     if (req.query.category) filter.category = req.query.category;
 
-    // $near returns closest first for free
     const jobs = await job
       .find(filter)
       .skip((page - 1) * limit)
@@ -129,7 +124,6 @@ const browsejobs = async (req, res, next) => {
   }
 };
 
-// hirer dashboard: my posted jobs, newest first
 const getmyjobs = async (req, res, next) => {
   try {
     const jobs = await job
@@ -154,7 +148,6 @@ const getjobdetail = async (req, res, next) => {
 
     if (!found) throw new apierror(404, "job not found");
 
-    // lazy expiry: flip status when someone actually opens an old job
     if (found.status === "open" && found.expiresat < new Date()) {
       found.status = "expired";
       await found.save();
@@ -166,7 +159,71 @@ const getjobdetail = async (req, res, next) => {
   }
 };
 
-// manual close by the hirer - the ONLY way a vacancy closes (locked rule)
+// limited whitelist - openings/category/location stay locked so
+// applicationcap and geo-matching invariants never drift after creation
+const updatejob = async (req, res, next) => {
+  try {
+    const target = await job.findById(req.params.id);
+    if (!target) throw new apierror(404, "job not found");
+
+    if (String(target.hirer) !== String(req.user._id))
+      throw new apierror(403, "not your job");
+
+    if (!["open", "closed"].includes(target.status))
+      throw new apierror(400, `cannot edit a ${target.status} job`);
+
+    const { title, description, pay, openings } = req.body;
+    const updates = {};
+
+    if (title !== undefined) {
+      const clean = String(title).trim();
+      if (!clean) throw new apierror(400, "title cannot be empty");
+      updates.title = clean;
+    }
+
+    if (description !== undefined) {
+      updates.description = String(description).trim();
+    }
+
+    if (pay !== undefined) {
+      const amount = Number(pay.amount);
+      if (isNaN(amount) || amount < 0) throw new apierror(400, "invalid pay amount");
+      if (!paytypes.includes(pay.type)) throw new apierror(400, "invalid pay type");
+      updates.pay = { amount, type: pay.type };
+
+      const cat = await category.findById(target.category);
+      if (cat?.suggestedpay?.min && cat.suggestedpay.type === pay.type) {
+        updates.belowsuggestedpay = amount < cat.suggestedpay.min;
+      } else {
+        updates.belowsuggestedpay = false;
+      }
+    }
+
+    // openings can change, but never below workers already selected
+    // cap is recomputed from the new count so anti-crowd math stays correct
+    if (openings !== undefined) {
+      const newopenings = parseInt(openings);
+      if (isNaN(newopenings) || newopenings < 1)
+        throw new apierror(400, "openings must be at least 1");
+      if (newopenings < target.selectedcount)
+        throw new apierror(400, `openings cannot be less than ${target.selectedcount} already-selected workers`);
+
+      updates.openings = newopenings;
+      updates.applicationcap = newopenings * parseInt(process.env.APPLICATION_CAP_MULTIPLIER);
+    }
+
+    if (Object.keys(updates).length === 0) throw new apierror(400, "nothing to update");
+
+    const updated = await job.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true })
+      .populate("category", "namekey icon")
+      .populate("workplacetype", "namekey icon");
+
+    res.status(200).json({ success: true, job: updated });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const closejob = async (req, res, next) => {
   try {
     const found = await job.findById(req.params.id);
@@ -187,4 +244,36 @@ const closejob = async (req, res, next) => {
   }
 };
 
-module.exports = { createjob, browsejobs, getmyjobs, getjobdetail, closejob };
+// undo an accidental close - only from closed, and only if not expired
+const reopenjob = async (req, res, next) => {
+  try {
+    const found = await job.findById(req.params.id);
+    if (!found) throw new apierror(404, "job not found");
+
+    if (String(found.hirer) !== String(req.user._id))
+      throw new apierror(403, "not your job");
+
+    if (found.status !== "closed")
+      throw new apierror(400, `can only reopen a closed job (this one is ${found.status})`);
+
+    if (found.expiresat < new Date())
+      throw new apierror(400, "job has already expired, cannot reopen");
+
+    found.status = "open";
+    await found.save();
+
+    res.status(200).json({ success: true, job: found });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  createjob,
+  browsejobs,
+  getmyjobs,
+  getjobdetail,
+  updatejob,
+  closejob,
+  reopenjob,
+};
