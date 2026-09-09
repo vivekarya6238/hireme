@@ -96,6 +96,7 @@ export default function JobDetail() {
   const { id } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
 
   const [job, setJob] = useState(null);
@@ -134,7 +135,6 @@ export default function JobDetail() {
     }
   }, [job, isWorker, isOwner]);
 
-  // check if this worker already rated the hirer for this job
   useEffect(() => {
     if (job && myApplication?.status === "selected" && job.status === "filled" && job.hirer) {
       api.get(`/ratings/user/${job.hirer._id}`).then((res) => {
@@ -156,7 +156,6 @@ export default function JobDetail() {
     }
   }, [job, isOwner]);
 
-  // check if hirer already rated a given selected worker for this job - lazy, on expand
   useEffect(() => {
     if (!expandedId || !job || job.status !== "filled") return;
     const app = applicants.find((a) => a._id === expandedId);
@@ -382,38 +381,40 @@ export default function JobDetail() {
         </motion.div>
 
         {job.hirer && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="bg-white rounded-3xl border border-[var(--color-border)] p-6 flex items-center gap-4"
-          >
-            {job.hirer.photo?.url ? (
-              <img src={job.hirer.photo.url} alt={job.hirer.name} className="w-12 h-12 rounded-full object-cover" />
-            ) : (
-              <span className="w-12 h-12 rounded-full bg-[var(--color-primary)] text-white font-display font-bold flex items-center justify-center">
-                {job.hirer.name?.[0]?.toUpperCase()}
-              </span>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="font-body font-semibold text-sm text-[var(--color-ink)]">{job.hirer.name}</p>
-              <div className="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                {job.hirer.ratingsummary?.countashirer > 0 ? (
-                  <span className="flex items-center gap-1">
-                    <Star size={12} className="text-amber-500 fill-amber-500" />
-                    {job.hirer.ratingsummary.avgashirer.toFixed(1)} ({job.hirer.ratingsummary.countashirer})
-                  </span>
-                ) : (
-                  <span>{t("profile.noRatingsYet")}</span>
-                )}
-                {job.addresstext && (
-                  <span className="flex items-center gap-1">
-                    <MapPin size={12} /> {job.addresstext}
-                  </span>
-                )}
+          <Link to={`/users/${job.hirer._id}`}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-white rounded-3xl border border-[var(--color-border)] p-6 flex items-center gap-4 hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all cursor-pointer"
+            >
+              {job.hirer.photo?.url ? (
+                <img src={job.hirer.photo.url} alt={job.hirer.name} className="w-12 h-12 rounded-full object-cover" />
+              ) : (
+                <span className="w-12 h-12 rounded-full bg-[var(--color-primary)] text-white font-display font-bold flex items-center justify-center">
+                  {job.hirer.name?.[0]?.toUpperCase()}
+                </span>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-body font-semibold text-sm text-[var(--color-ink)]">{job.hirer.name}</p>
+                <div className="flex items-center gap-2 text-xs text-[var(--color-muted)]">
+                  {job.hirer.ratingsummary?.countashirer > 0 ? (
+                    <span className="flex items-center gap-1">
+                      <Star size={12} className="text-amber-500 fill-amber-500" />
+                      {job.hirer.ratingsummary.avgashirer.toFixed(1)} ({job.hirer.ratingsummary.countashirer})
+                    </span>
+                  ) : (
+                    <span>{t("profile.noRatingsYet")}</span>
+                  )}
+                  {job.addresstext && (
+                    <span className="flex items-center gap-1">
+                      <MapPin size={12} /> {job.addresstext}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </Link>
         )}
 
         {actionError && <p className="text-sm text-red-600 font-body">{actionError}</p>}
@@ -545,24 +546,34 @@ export default function JobDetail() {
 
                   return (
                     <div key={a._id} className="rounded-xl border border-[var(--color-border)] overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setExpandedId(isExpanded ? null : a._id)}
-                        className="w-full flex items-center gap-3 p-3 text-left"
-                      >
-                        {a.worker?.photo?.url ? (
-                          <img src={a.worker.photo.url} alt={a.worker.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
-                        ) : (
-                          <span className="w-10 h-10 rounded-full bg-[var(--color-bg)] text-[var(--color-ink)] font-display font-bold text-sm flex items-center justify-center shrink-0">
-                            {a.worker?.name?.[0]?.toUpperCase()}
-                          </span>
-                        )}
+                      <div className="w-full flex items-center gap-3 p-3">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId(isExpanded ? null : a._id)}
+                          className="shrink-0"
+                        >
+                          {a.worker?.photo?.url ? (
+                            <img src={a.worker.photo.url} alt={a.worker.name} className="w-10 h-10 rounded-full object-cover" />
+                          ) : (
+                            <span className="w-10 h-10 rounded-full bg-[var(--color-bg)] text-[var(--color-ink)] font-display font-bold text-sm flex items-center justify-center">
+                              {a.worker?.name?.[0]?.toUpperCase()}
+                            </span>
+                          )}
+                        </button>
 
-                        <div className="flex-1 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId(isExpanded ? null : a._id)}
+                          className="flex-1 min-w-0 text-left"
+                        >
                           <div className="flex items-center gap-2">
-                            <p className="font-body font-semibold text-sm text-[var(--color-ink)] truncate">
+                            <Link
+                              to={`/users/${a.worker?._id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="font-body font-semibold text-sm text-[var(--color-ink)] truncate hover:text-[var(--color-primary)] hover:underline"
+                            >
                               {a.worker?.name}
-                            </p>
+                            </Link>
                             {hasRating ? (
                               <span className="flex items-center gap-0.5 text-xs text-[var(--color-muted)] shrink-0">
                                 <Star size={11} className="text-amber-500 fill-amber-500" />
@@ -575,33 +586,35 @@ export default function JobDetail() {
                           <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full capitalize mt-0.5 ${APP_STATUS_TEXT[a.status]}`}>
                             {t(`jobDetail.status.${a.status}`)}
                           </span>
-                        </div>
+                        </button>
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           {a.status === "applied" && job.status === "open" && (
                             <>
-                              <span
-                                role="button"
-                                onClick={(e) => { e.stopPropagation(); handleSelect(a._id); }}
+                              <button
+                                type="button"
+                                onClick={() => handleSelect(a._id)}
                                 className="w-8 h-8 rounded-lg bg-green-50 text-green-700 flex items-center justify-center"
                               >
                                 <CheckCircle2 size={16} />
-                              </span>
-                              <span
-                                role="button"
-                                onClick={(e) => { e.stopPropagation(); handleReject(a._id); }}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleReject(a._id)}
                                 className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center"
                               >
                                 <XCircle size={16} />
-                              </span>
+                              </button>
                             </>
                           )}
-                          <ChevronDown
-                            size={16}
-                            className={`text-[var(--color-muted)] transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                          />
+                          <button type="button" onClick={() => setExpandedId(isExpanded ? null : a._id)}>
+                            <ChevronDown
+                              size={16}
+                              className={`text-[var(--color-muted)] transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                            />
+                          </button>
                         </div>
-                      </button>
+                      </div>
 
                       {isExpanded && (
                         <div className="px-4 pb-4 pt-1 border-t border-[var(--color-border)] bg-[var(--color-bg)]">

@@ -11,6 +11,7 @@ import PostJob from "./pages/PostJob";
 import JobDetail from "./pages/JobDetail";
 import EditJob from "./pages/EditJob";
 import MyApplications from "./pages/MyApplications";
+import PublicProfile from "./pages/PublicProfile";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/jobs/:id" element={<ProtectedRoute><JobDetail /></ProtectedRoute>} />
         <Route path="/jobs/:id/edit" element={<ProtectedRoute><EditJob /></ProtectedRoute>} />
         <Route path="/applications" element={<ProtectedRoute><MyApplications /></ProtectedRoute>} />
+        <Route path="/users/:id" element={<ProtectedRoute><PublicProfile /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   );

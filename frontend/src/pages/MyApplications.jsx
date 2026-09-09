@@ -39,7 +39,7 @@ export default function MyApplications() {
         prev.map((a) => (a._id === appId ? { ...a, status: "withdrawn" } : a))
       );
     } catch {
-      // silent fail is fine here - status just won't update, user can retry
+      // silent fail - status just won't update, user can retry
     } finally {
       setWithdrawing(null);
     }
@@ -117,7 +117,9 @@ export default function MyApplications() {
 
                       {job.hirer && (
                         <div className="flex items-center gap-2 text-xs text-[var(--color-muted)] mb-2">
-                          <span>{job.hirer.name}</span>
+                          <Link to={`/users/${job.hirer._id}`} className="hover:text-[var(--color-primary)] hover:underline">
+                            {job.hirer.name}
+                          </Link>
                           {job.hirer.ratingsummary?.countashirer > 0 && (
                             <span className="flex items-center gap-1">
                               <Star size={11} className="text-amber-500 fill-amber-500" />
