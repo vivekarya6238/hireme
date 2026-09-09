@@ -248,6 +248,14 @@
   "closeConfirmTitle": "क्या इस काम को बंद करें?",
   "closeConfirmBody": "वर्कर अब आवेदन नहीं कर पाएंगे। ज़रूरत पड़ने पर आप इसे बाद में दोबारा खोल सकते हैं।",
   "noInfo": "जानकारी नहीं",
+  "rateWorker": "इस वर्कर को रेट करें",
+  "rateHirer": "इस हायरर को रेट करें",
+  "ratingRequired": "कृपया स्टार रेटिंग चुनें",
+  "ratingCommentPlaceholder": "टिप्पणी लिखें (वैकल्पिक)",
+  "ratingSaving": "जमा हो रहा है...",
+  "ratingSubmit": "रेटिंग जमा करें",
+  "ratingSubmitted": "आपकी रेटिंग के लिए धन्यवाद!",
+  "postSimilarJob": "मिलता-जुलता काम पोस्ट करें",
 
   "status": {
     "applied": "आवेदन किया",

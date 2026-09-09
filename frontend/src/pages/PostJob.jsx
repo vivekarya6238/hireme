@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../services/api";
 import Navbar from "../components/Navbar";
 import { getCategoryIcon } from "../utils/categoryicons";
 import { Pencil } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const PAYTYPE_OPTIONS = ["perday", "permonth", "perhour"];
 
@@ -37,6 +37,25 @@ export default function PostJob() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const dup = location.state?.duplicateFrom;
+    if (dup && categories.length > 0) {
+      setTitle(dup.title);
+      setDescription(dup.description || "");
+      setCategoryId(dup.category?._id || "");
+      setWorkplacetypeId(dup.workplacetype?._id || "");
+      setOpenings(String(dup.openings));
+      setPayAmount(String(dup.pay.amount));
+      setPayType(dup.pay.type);
+      if (dup.othercategorytext) {
+        setShowOther(true);
+        setOtherText(dup.othercategorytext);
+      }
+    }
+  }, [location.state, categories]);
 
   const otherCategory = categories.find((c) => c.namekey === "cat.other");
 

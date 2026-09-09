@@ -248,6 +248,14 @@
   "closeConfirmTitle": "Close this job?",
   "closeConfirmBody": "Workers won't be able to apply anymore. You can reopen it later if needed.",
   "noInfo": "Not specified",
+  "rateWorker": "Rate this worker",
+  "rateHirer": "Rate this hirer",
+  "ratingRequired": "Please select a star rating",
+  "ratingCommentPlaceholder": "Leave a comment (optional)",
+  "ratingSaving": "Submitting...",
+  "ratingSubmit": "Submit Rating",
+  "ratingSubmitted": "Thanks for your rating!",
+  "postSimilarJob": "Post Similar Job",
 
   "status": {
     "applied": "Applied",
