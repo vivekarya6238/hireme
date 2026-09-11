@@ -197,7 +197,10 @@
   "tabActive": "सक्रिय ({{count}})",
   "tabHistory": "इतिहास ({{count}})",
   "noActiveJobs": "अभी कोई सक्रिय काम नहीं है।",
-  "noHistoryJobs": "अभी तक कोई इतिहास नहीं है।"
+  "noHistoryJobs": "अभी तक कोई इतिहास नहीं है।",
+  "searchPlaceholder": "काम का शीर्षक खोजें...",
+  "allCategories": "सभी",
+  "noSearchResults": "आपकी खोज से कोई काम नहीं मिला।"
 },
 "postJob": {
   "title": "काम पोस्ट करें",
@@ -256,6 +259,7 @@
   "ratingSubmit": "रेटिंग जमा करें",
   "ratingSubmitted": "आपकी रेटिंग के लिए धन्यवाद!",
   "postSimilarJob": "मिलता-जुलता काम पोस्ट करें",
+  "viewProfile": "प्रोफ़ाइल देखें",
 
   "status": {
     "applied": "आवेदन किया",

@@ -197,7 +197,10 @@
   "tabActive": "Active ({{count}})",
   "tabHistory": "History ({{count}})",
   "noActiveJobs": "No active jobs right now.",
-  "noHistoryJobs": "No job history yet."
+  "noHistoryJobs": "No job history yet.",
+  "searchPlaceholder": "Search jobs by title...",
+  "allCategories": "All",
+  "noSearchResults": "No jobs match your search."
   },
   "postJob": {
   "title": "Post a Job",
@@ -256,6 +259,7 @@
   "ratingSubmit": "Submit Rating",
   "ratingSubmitted": "Thanks for your rating!",
   "postSimilarJob": "Post Similar Job",
+  "viewProfile": "View Profile",
 
   "status": {
     "applied": "Applied",

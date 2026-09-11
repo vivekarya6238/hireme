@@ -386,32 +386,56 @@ export default function JobDetail() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="bg-white rounded-3xl border border-[var(--color-border)] p-6 flex items-center gap-4 hover:border-[var(--color-primary)]/30 hover:shadow-md transition-all cursor-pointer"
+              className="group bg-white rounded-3xl border border-[var(--color-border)] p-6 relative overflow-hidden hover:border-[var(--color-primary)]/30 hover:shadow-lg transition-all cursor-pointer"
             >
-              {job.hirer.photo?.url ? (
-                <img src={job.hirer.photo.url} alt={job.hirer.name} className="w-12 h-12 rounded-full object-cover" />
-              ) : (
-                <span className="w-12 h-12 rounded-full bg-[var(--color-primary)] text-white font-display font-bold flex items-center justify-center">
-                  {job.hirer.name?.[0]?.toUpperCase()}
-                </span>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-body font-semibold text-sm text-[var(--color-ink)]">{job.hirer.name}</p>
-                <div className="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                  {job.hirer.ratingsummary?.countashirer > 0 ? (
-                    <span className="flex items-center gap-1">
-                      <Star size={12} className="text-amber-500 fill-amber-500" />
-                      {job.hirer.ratingsummary.avgashirer.toFixed(1)} ({job.hirer.ratingsummary.countashirer})
-                    </span>
-                  ) : (
-                    <span>{t("profile.noRatingsYet")}</span>
-                  )}
-                  {job.addresstext && (
-                    <span className="flex items-center gap-1">
-                      <MapPin size={12} /> {job.addresstext}
-                    </span>
-                  )}
+              <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-[var(--color-primary)]/5" />
+              <div className="absolute -bottom-6 -right-2 w-16 h-16 rounded-full bg-[var(--color-accent)]/8" />
+
+              <div className="relative flex items-center gap-4">
+                {job.hirer.photo?.url ? (
+                  <img
+                    src={job.hirer.photo.url}
+                    alt={job.hirer.name}
+                    className="w-14 h-14 rounded-full object-cover ring-2 ring-white shadow-sm"
+                  />
+                ) : (
+                  <span className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary)]/80 text-white font-display font-bold text-lg flex items-center justify-center shadow-sm">
+                    {job.hirer.name?.[0]?.toUpperCase()}
+                  </span>
+                )}
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <p className="font-body font-bold text-sm text-[var(--color-ink)] truncate">
+                      {job.hirer.name}
+                    </p>
+                    <ShieldCheck size={14} className="text-green-600 shrink-0" />
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    {job.hirer.ratingsummary?.countashirer > 0 ? (
+                      <span className="flex items-center gap-1 text-xs text-[var(--color-ink)] font-medium">
+                        <Star size={12} className="text-amber-500 fill-amber-500" />
+                        {job.hirer.ratingsummary.avgashirer.toFixed(1)}
+                        <span className="text-[var(--color-muted)] font-normal">
+                          ({job.hirer.ratingsummary.countashirer})
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-[var(--color-muted)]">{t("profile.noRatingsYet")}</span>
+                    )}
+                    {job.addresstext && (
+                      <span className="flex items-center gap-1 text-xs text-[var(--color-muted)]">
+                        <MapPin size={12} /> {job.addresstext}
+                      </span>
+                    )}
+                  </div>
                 </div>
+
+                <span className="shrink-0 text-xs font-semibold text-[var(--color-primary)] flex items-center gap-1 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all">
+                  {t("jobDetail.viewProfile")}
+                  <span className="text-base leading-none">→</span>
+                </span>
               </div>
             </motion.div>
           </Link>
